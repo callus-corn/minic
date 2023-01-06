@@ -9,6 +9,7 @@ void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
 
 typedef enum {
+    TK_RETURN,
     TK_RESERVED,
     TK_IDENT,
     TK_NUM,
@@ -48,6 +49,7 @@ typedef enum {
     ND_NE,
     ND_LT,
     ND_LE,
+    ND_RETURN,
     ND_LVAR,
     ND_NUM,
 } NodeKind;
