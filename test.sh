@@ -51,4 +51,8 @@ assert 5 'a=5;'
 assert 10 'a=5;b=10;'
 assert 7 'a=5;b=10;z=7*(9-6)/3;'
 
+assert 1 'foo=1;'
+assert 2 'foo=1;bar=2;'
+assert 45 'foo=1;bar=2;hoge=9*(15-5)/2;'
+
 echo OK

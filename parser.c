@@ -69,7 +69,12 @@ Token *tokenize(char *p) {
         }
 
         if ('a' <= *p && *p <= 'z') {
-            cur = new_token(TK_IDENT, cur, p++, 1);
+            //cur = new_token(TK_IDENT, cur, p++, 1);
+            int i=0;
+            while ('a' <= p[i] && p[i] <= 'z')
+                i++;
+            cur = new_token(TK_IDENT, cur, p, i);
+            p += i;
             continue;
         }
 

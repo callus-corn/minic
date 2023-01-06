@@ -23,6 +23,14 @@ struct Token {
     int len;
 };
 extern Token *token;
+typedef struct LVar LVar;
+struct LVar{
+    LVar *next;
+    char *name;
+    int len;
+    int offset;
+};
+extern LVar *locals;
 bool consume(char *op);
 void expect(char *op);
 Token *consume_ident();
