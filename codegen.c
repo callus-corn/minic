@@ -1,6 +1,10 @@
 #include "minic.h"
 
+Node *code[100];
+
+Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
@@ -16,6 +20,13 @@ Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
     return node;
 }
 
+Node *new_node_ident(Token *tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->offset = (tok->str[0] - 'a' + 1) * 8;
+    return node;
+}
+
 Node *new_node_num(int val) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_NUM;
@@ -23,12 +34,29 @@ Node *new_node_num(int val) {
     return node;
 }
 
-Node *ast() {
-    return expr();
+void program() {
+    int i = 0;
+    while (!at_eof())
+        code[i++] = stmt();
+    code[i] = NULL;
+}
+
+Node *stmt() {
+    Node *node = expr();
+    expect(";");
+    return node;
 }
 
 Node *expr() {
-    return equality();
+    return assign();
+}
+
+Node *assign() {
+    Node *node = equality();
+
+    if (consume("="))
+        node = new_node(ND_ASSIGN, node, assign());
+    return node;
 }
 
 Node *equality() {
@@ -102,12 +130,41 @@ Node *primary() {
         return node;
     }
 
+    Token *tok = consume_ident();
+    if (tok) {
+        return new_node_ident(tok);
+    }
+
     return new_node_num(expect_number());
 }
 
+void gen_lval(Node *node) {
+    if (node->kind != ND_LVAR)
+        error("代入の左辺値が変数ではありません");
+    
+    printf("  mov rax, rbp\n");
+    printf("  sub rax, %d\n", node->offset);
+    printf("  push rax\n");
+}
+
 void gen(Node *node) {
-    if (node->kind == ND_NUM) {
+    switch (node->kind) {
+    case ND_NUM:
         printf("  push %d\n", node->val);
+        return;
+    case ND_LVAR:
+        gen_lval(node);
+        printf("  pop rax\n");
+        printf("  mov rax, [rax]\n");
+        printf("  push rax\n");
+        return;
+    case ND_ASSIGN:
+        gen_lval(node->lhs);
+        gen(node->rhs);
+        printf("  pop rdi\n");
+        printf("  pop rax\n");
+        printf("  mov [rax], rdi\n");
+        printf("  push rdi\n");
         return;
     }
 
